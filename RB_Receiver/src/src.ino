@@ -15,6 +15,7 @@ typedef struct {
     uint8_t header;
     uint8_t address;
     uint8_t btnStates;
+    uint8_t vcc20;      // voltage in mV/20
 } btnData_t;
 
 void setup() {
@@ -39,7 +40,7 @@ void loop() {
     if(radio.available()) {
         btnData_t data;
         radio.read(&data, sizeof(btnData_t));
-        printf("Received packet: [%02x %02X %02X]\n", data.header, data.address, data.btnStates);
+        printf("Received packet: [%02x %02X %02X %02X]\n", data.header, data.address, data.btnStates, data.vcc20);
 
         if(data.header == 0x42) {
             if(data.address == LISTEN_ADDR) {
