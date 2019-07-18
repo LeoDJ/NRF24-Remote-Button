@@ -24,6 +24,7 @@ void setup() {
     pinMode(OUTPUT_PIN, OUTPUT);
 
     radio.begin();
+    radio.setDataRate(RF24_250KBPS); // hopefully increase range a bit
     radio.openReadingPipe(1, COMMS_PIPE);
     radio.printDetails();
 }
