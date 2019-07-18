@@ -9,7 +9,7 @@
 #define NRF24_CE    7
 #define NRF24_CS    8
 #define COMMS_PIPE  (uint8_t*)"CfHRB"
-const uint8_t dipSwitchPins[] = {4, 5, 6, 7};
+const uint8_t dipSwitchPins[] = {4, 5, 6, 7}; // set the address of the button by pulling the pins to GND (inverted logic)
 
 const uint8_t dipSwitchPinCount = sizeof(dipSwitchPins)/sizeof(dipSwitchPins[0]);
 RF24 radio(NRF24_CE, NRF24_CS);
@@ -41,14 +41,14 @@ void sleep() {
 uint8_t getDipSwitchAddress() {
     uint8_t addr;
     for(uint8_t i = 0; i < dipSwitchPinCount; i++) {
-        addr |= digitalRead(dipSwitchPins[i]) << i;
+        addr |= !digitalRead(dipSwitchPins[i]) << i;
     }
     return addr;
 }
 
 void setup() {
     Serial.begin(115200);
-    Serial.println(F("\nNRF24-Remote-Button Transmitter"));
+    Serial.println(F("\nNRF24-Remote-Button Transmitter\n\n"));
     btnData_t d;
     Serial.println(d.header);
 
@@ -68,9 +68,12 @@ void sendPacket(uint8_t address, uint8_t btnStates) {
     data.address = address;
     data.btnStates = btnStates;
     
-    printf("\nSending packet: [%02x %02X %02X]", data.header, data.address, data.btnStates);
+    printf("Sending packet: [%02x %02X %02X]\n", data.header, data.address, data.btnStates);
     radio.stopListening();  // stop rx to tx
-    radio.write(&data, sizeof(btnData_t));
+    bool state = radio.write(&data, sizeof(btnData_t));
+    if(!state) {
+        Serial.println("Error: Sending failed");
+    }
 }
 
 void loop() {
